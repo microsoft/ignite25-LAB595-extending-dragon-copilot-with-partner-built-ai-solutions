@@ -1,0 +1,42 @@
+---
+# This workflow automatically adds new issues to the Ignite GitHub Project
+# and applies labels
+#
+# Prerequisites:
+# 1. Set up ADD_TO_PROJECT_PAT secret with a Personal Access Token that has
+#    project write access
+# 2. Update the project-url with the correct Microsoft Ignite project URL
+# 3. Customize the labels in the label_issues job as needed
+#
+name: Add Issue to Project and Apply Labels
+
+"on":
+  issues:
+    types: [opened]
+
+jobs:
+  add-to-project:
+    name: Add issue to Ignite GitHub Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Issue to Project
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/microsoft/projects/1234
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+  label_issues:
+    name: Apply labels to new issues
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply default labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['ignite-2025', 'needs-triage']
+            });
