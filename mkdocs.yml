@@ -19,15 +19,15 @@
 
 
 # Project information .........................................
-site_name: "Session Title"
-site_url: 
-site_author: Content Creator
+site_name: "LAB595: Building Dragon Copilot With Partner Built AI Solutions"
+site_url: https://ignite.microsoft.com/en-US/sessions/LAB595
+site_author: Brandon Pollett
 site_description: >-
-  Demo mkdocs for Ignite Repos
+  Documentation for the Ignite LAB595
 
 # Repository ..................................................
-repo_name: microsoft/Ignite25-Repo-Template
-repo_url: https://github.com/microsoft/Ignite25-Repo-Template
+repo_name: microsoft/ignite25-LAB595-extending-dragon-copilot-with-partner-built-ai-solutions
+repo_url: https://github.com/microsoft/ignite25-LAB595-extending-dragon-copilot-with-partner-built-ai-solutions
 
 # Copyright ...................................................
 copyright: >
