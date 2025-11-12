@@ -2,7 +2,7 @@
 
 Create Entra application
 
-1. Open a browser and go to `https://entra.microsoft.com`
+1. Open the browser and go to `https://entra.microsoft.com`
 3. In the Entra portal, select "App registrations" from the left menu.
 
     ![](media/entra-app-reg-menu.png)
