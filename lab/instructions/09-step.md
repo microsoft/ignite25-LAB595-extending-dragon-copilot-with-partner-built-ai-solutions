@@ -11,7 +11,7 @@
     5. Click "Complete setup"
 5. Ensure "Auto-style" is enabled
     1. Click the gear icon in the top right
-
+    
        ![settings-gear.png](media/settings-gear.png)
     3. Click "Note style & format" in the menu
     

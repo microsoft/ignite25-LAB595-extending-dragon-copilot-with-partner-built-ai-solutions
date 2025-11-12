@@ -6,7 +6,7 @@ We are now going to package our extension using the dragon-extension CLI tool. T
 2. Create a new folder called `extension-payload`
 3. Change directory to the newly created directory
 4. Issue a `dragon-extension init` command
-    1. Give your extension a name and include your name in lowercase characters (e.g. `my-extension-@lab.User.FirstName-@lab.User.LastName`)
+    1. Give your extension a name and include your name in lowercase characters (e.g. `my-extension-@lab.LabInstance.Id`)
     2. For Entra Tenant ID you can use: `@lab.CloudSubscription.TenantId`
     3. In the tools section, select "Note" as the input type
     4. For API Endpoint, use the dev tunnel URL you created in the last step with the addition of "v1/process" as the route. (i.e. https://{devtunnel-url}/v1/process)

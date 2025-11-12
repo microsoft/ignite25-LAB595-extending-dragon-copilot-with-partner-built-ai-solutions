@@ -28,9 +28,8 @@ The following resources should be pre-provisioned for you:
 ### Tokens
 Tokens are used through the lab to simplify configuration and setup. The following tokens will need to be replaced if you are not using the provided lab environment.
 
-| Token Name         | Sample Value                          |
-|--------------------|--------------------------------------|
-| @lab.User.FirstName | John                                 |
-| @lab.User.LastName  | Doe                                  |
+| Token Name                      | Sample Value                         |
+|---------------------------------|--------------------------------------|
+| @lab.LabInstance.Id             | Instance123                          |
 | @lab.CloudSubscription.TenantId | 12345678-90ab-cdef-1234-567890abcdef |
-| @lab.CloudPortal.Link | https://portal.azure.com/           |
+| @lab.CloudPortal.Link           | https://portal.azure.com/            |

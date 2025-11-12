@@ -6,7 +6,7 @@ Create Entra application
 2. In the top left, select the grid icon -> "Entra"
 3. In the Entra portal, select "App registrations" from the left menu.
 4. From the top menu select "New Registration"
-5. In the "Name" field input +++Dragon Copilot Extension - @lab.User.FirstName @lab.User.LastName+++
+5. In the "Name" field input +++Dragon Copilot Extension - @lab.LabInstance.Id+++
 6. Click "Register"
 7. In the Application details navigation, select "Expose an API"
 8. Beside the "Application ID URI" select "Add"

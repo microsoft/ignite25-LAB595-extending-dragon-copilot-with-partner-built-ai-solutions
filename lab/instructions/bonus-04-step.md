@@ -1,7 +1,5 @@
 ## Deploying to Azure.
 
-
-### Steps
 1. Build the Docker Image
 From the repository root directory, build the Docker image:
 
