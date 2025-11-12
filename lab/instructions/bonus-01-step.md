@@ -119,4 +119,4 @@ An OpenAI resource running the gpt-5-mini model has been pre-provisioned for you
 
     ```
 
-We should now be able to successfully call the OpenAI Resource. In the next section, we will update the ouput to display an adaptive card
+We should now be able to successfully call the OpenAI Resource. In the next section, we will update the output to display an adaptive card

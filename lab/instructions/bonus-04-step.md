@@ -1,46 +1,59 @@
-## Deploying to Azure
+## Deploying to Azure.
+
 
 ### Steps
 1. Build the Docker Image
 From the repository root directory, build the Docker image:
 
 ```
-# Build the Docker image
 docker build -f samples/DragonCopilot/Workflow/SampleExtension.Web/Dockerfile -t dragon-extension:latest .
 ```
 > Note: The Dockerfile must be built from the repository root because it references files from both src/Dragon.Copilot.Models/ and samples/DragonCopilot/Workflow/SampleExtension.Web/.
 
-2. Test the Docker Image Locally (Optional but Recommended)
+2. Test the docker image Locally (Optional but Recommended)
 
-```
-# Run the container locally
-docker run -p 5181:8080 dragon-extension:latest
+    ```
+    docker run -p 5181:8080 dragon-extension:latest
+    ```
 
-# Test the health endpoint
-curl http://localhost:5181/health
-```
+3. Execute a test call to the health endpoint of the running docker image in the terminal:
+    ```
+    curl http://localhost:5181/health
+    ```
+
 3. Perform an `az login`
-3. Create the needed azure resources using the following powershell script. 
 
+5. Create the needed azure resources using the following powershell script. 
 ```powershell
 $applicationId = Read-Host -Prompt "Please enter your Application (client) ID"
-$ExtensionName = "my-extension-@lab.User.FirstName-@lab.User.LastName"
+$ExtensionName = "my-extension-@lab.LabInstance.Id"
 $ResourceGroup = "@lab.CloudResourceGroup(ResourceGroup1).Name"
 $Region = "@lab.CloudResourceGroup(ResourceGroup1).Location"
 $EnvironmentSuffix = "dev"
 $environmentName = "$ExtensionName-$EnvironmentSuffix-env"
 $containerAppName = "$ExtensionName-$EnvironmentSuffix"
 
+az login
+az provider register -n Microsoft.App --wait
+
+
 # Create a resource group
 az group create --name $ResourceGroup --location $Region
 
 az provider register -n Microsoft.OperationalInsights --wait
 
+$workspaceName = ($ExtensionName -replace '-','') + "workspace" + $EnvironmentSuffix
+az monitor log-analytics workspace create -n $workspaceName --resource-group  $ResourceGroup
+$workspaceId = az monitor log-analytics workspace show  -n $workspaceName --resource-group  $ResourceGroup --query customerId -o tsv
+$primarySharedKey = az monitor log-analytics workspace get-shared-keys  -n $workspaceName --resource-group  $ResourceGroup --query primarySharedKey -o tsv
+
 # Create a container app environment
 az containerapp env create `
             --name $environmentName `
             --resource-group $ResourceGroup `
-            --location $Region
+            --location $Region `
+            --logs-workspace-id $workspaceId `
+    		--logs-workspace-key $primarySharedKey
 
 # Create a container registry
 $registryName = ($ExtensionName -replace '-','') + "acr" + $EnvironmentSuffix
@@ -101,5 +114,7 @@ Write-Host("Your extension is available at: $containerAppUrl/v1/process")
 ```
 
 4. Using the obtained URL, update your application registration to add a secondary identifier URL
-5. Update your manifest to point to the newly deployed URL
-6. You can now test your extension using a hosted version of it.
+
+6. Update your manifest to point to the newly deployed URL
+
+8. You can now test your extension using a hosted version of it.
