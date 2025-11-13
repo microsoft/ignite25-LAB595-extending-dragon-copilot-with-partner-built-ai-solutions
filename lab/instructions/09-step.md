@@ -23,6 +23,13 @@
     
     	 ![settings-auto-style.png](media/settings-auto-style.png)
     9. This setting is auto-saved and only needs to happen once
+6. Make sure you're using the correct environment.
+    1. Click the gear icon in the top right
+
+        ![settings-gear.png](media/settings-gear.png)
+    2. Click "General" in the menu
+    3. Navigate to the "Enviroment Id" section
+    3. Select the environment that matches the card on your lab machine
 6. Ensure other extensions disabled
     1. Click the gear icon in the top right
     
