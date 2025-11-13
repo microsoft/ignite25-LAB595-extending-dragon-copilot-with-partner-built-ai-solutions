@@ -3,8 +3,10 @@
 We are now going to package our extension using the dragon-extension CLI tool. The CLI tool has been pre-registered using the [instructions on the GitHub repository](https://github.com/microsoft/dragon-copilot-extension-samples?tab=readme-ov-file#dragon-extension-cli). 
 
 1. Open a new terminal window
-2. Create a new folder called `extension-payload`
+2. Create a new folder for your extension 
+    * `mkdir extension-payload`
 3. Change directory to the newly created directory
+    * `cd extension-payload`
 4. Issue a `dragon-extension init` command
     1. Give your extension a name and include your name in lowercase characters (e.g. `my-extension-@lab.LabInstance.Id`)
     2. For Entra Tenant ID you can use: `@lab.CloudSubscription.TenantId`
