@@ -4,8 +4,8 @@
 2. Issue a `devtunnel login` command.
     1. Select "Work or School Account"
     2. Your login credentials can be found in the resources tab above the instructions.
-5. Issue a `devtunnel host -p 5181 --allow-anonymous` command
-6. Copy the URL that is output in the terminal. Make sure to copy the dev tunnel "connect via browser url" as shown in example below.
+3. Issue a `devtunnel host -p 5181 --allow-anonymous` command
+4. Copy the URL that is output in the terminal. Make sure to copy the dev tunnel "connect via browser url" as shown in example below.
 
     ![devtunnel-url.png](media/devtunnel-url.png)
 
