@@ -19,7 +19,7 @@ Create Entra application
 8. Beside the "Application ID URI" select "Add"
 
     ![](media/entra-add-application-id-uri.png)
-9. In the "Application ID URI" textbox, construct a value that follows the template "api://@lab.CloudSubscription.TenantId/{DevTunnel full hostname}
+9. In the "Application ID URI" textbox, use the follwoing value `api://@lab.CloudSubscription.TenantId/@lab.Variable(devtunnelDomain)`
 10. Click the "Save" button
 11. In the application details navigation, select "Token Configuration"
 

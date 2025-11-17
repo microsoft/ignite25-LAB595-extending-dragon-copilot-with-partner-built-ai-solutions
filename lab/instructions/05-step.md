@@ -9,4 +9,8 @@
 
     ![devtunnel-url.png](media/devtunnel-url.png)
 
+5. Past your devtunnel domain as copied above into the following textbox for later use in the lab. Be sure to **not** include the scheme (e.g. "https://"):
+
+ @lab.TextBox(devtunnelDomain)
+
 Your locally running endpoint is now accessible via a hosted DevTunnel to the internet.

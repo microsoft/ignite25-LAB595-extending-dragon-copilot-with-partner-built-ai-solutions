@@ -11,7 +11,8 @@ We are now going to package our extension using the dragon-extension CLI tool. T
     1. Give your extension the name `igntite-extension-@lab.LabInstance.Id`
     2. For Entra Tenant ID you can use: `@lab.CloudSubscription.TenantId`
     3. In the tools section, select "Note" as the input type by selecting with the space bar and then hitting enter.
-    4. For API Endpoint, use the dev tunnel URL you created in the last step with the addition of "v1/process" as the route. (i.e. https://{devtunnel-url}/v1/process)
+    4. For API Endpoint, use the dev tunnel URL you created in the last step with the addition of "v1/process" as the route. 
+    `https://@lab.Variable(devtunnelDomain)/v1/process`
     5. The rest of the details can be taken as default.
 5. Issue a `dragon-extension package` command.
 
