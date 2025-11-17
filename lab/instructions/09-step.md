@@ -1,6 +1,6 @@
 ## Testing your Extension
 
-1. Launch [Dragon Copilot](https://www.copilot.us.dragon.com)
+1. Open the browser and go to `https://www.copilot.us.dragon.com`
 2. Click "Sign In"
 3. Allow the use of the microphone in the popup in the top left.
 4. Go through the initial setup
@@ -48,7 +48,8 @@
     3. Select extensions besides your own
     4. Toggle the extension off
     5. This setting is auto-saved and only needs to happen once
-7. Click "New Session" in the bottom left
+7. Click "Create patient session" in the bottom left
+    ![create-patient-session.png](media/create-patient-session.png)
 8. Create an ambient recording by clicking the button to the right of the prompt box in the bottom.
     ![ambient-button.png](media/ambient-button.png)
 9. Sample script:
