@@ -9,7 +9,17 @@
     3. Slect any role
     4. Click "Next"
     5. Click "Complete setup"
-5. Ensure "Auto-style" is enabled
+5. Switch environment using following steps:
+    1. Click "Settings"
+    ![settings-switch-environment-1.png](media/settings-switch-environment-1.png)
+    2. Click "General"
+    3. Select your assigned environment from the dropdown
+    ![settings-switch-environment-2.png](media/settings-switch-environment-2.png)
+    4. Click "Reload app" in Change Environment popup
+    ![settings-switch-environment-3.png](media/settings-switch-environment-3.png)
+    5. Go through step 4 i.e. initial setup of selecting specialties.
+
+6. Ensure "Auto-style" is enabled
     1. Click the gear icon in the top right
     
        ![settings-gear.png](media/settings-gear.png)
