@@ -21,7 +21,7 @@ docker build -f samples/DragonCopilot/Workflow/SampleExtension.Web/Dockerfile -t
 
 3. Perform an `az login`
 
-5. Create the needed azure resources using the following powershell script. 
+5. Copy the follwing to a new file `deploy.ps1` 
 ```powershell
 $applicationId = Read-Host -Prompt "Please enter your Application (client) ID"
 $ExtensionName = "my-extension-@lab.LabInstance.Id"
@@ -110,6 +110,8 @@ $containerAppUrl = az containerapp show `
 
 Write-Host("Your extension is available at: $containerAppUrl/v1/process")
 ```
+
+4. Execute the newly created `deploy.ps1`
 
 4. Using the obtained URL, update your application registration to add a secondary identifier URL
 
