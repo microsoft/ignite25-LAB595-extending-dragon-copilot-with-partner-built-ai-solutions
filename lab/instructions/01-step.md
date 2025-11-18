@@ -49,4 +49,4 @@ The application should now be running and available at https://localhost:5181
     }
 	```
 
-This demonstrates that the sample application is correctly working. You can now stop the service by returning to your terminal and issuing a `ctrl+c` combination.
+This demonstrates that the sample application is correctly working.
