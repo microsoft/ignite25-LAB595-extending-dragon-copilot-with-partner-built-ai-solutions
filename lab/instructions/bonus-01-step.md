@@ -6,117 +6,297 @@ The next step is to update the processor to make use of an OpenAI service. We ar
 
 ### Updating the processing of the note
 
-#### Obtaining the OpenAI sample code
-An OpenAI resource running the gpt-5-mini model has been pre-provisioned for you.
-
-1. In a browser, open the Azure AI Foundrary +++https://ai.azure.com/+++
-2. Click "Sign In" and use credentials found in the "Resources" tab above.
-3. In the top table, click the resource that starts with "ignite25ai"
-5. In the left navigation select `Models + Endpoints`
-7. In the table select `gpt-5-mini`
-8. In the right side of the screen update the language to `C#`
-
 #### Adding required dependencies to our solution
 1. In VS Code, open the terminal and navigate to `samples\DragonCopilot\Workflow\SampleExtension.Web`
-2. Issue a `dotnet restore`
-3. Issue a `dotnet add package Azure.AI.OpenAI --version 2.2.0-beta.4`
-4. Issue a `dotnet add package Azure.Core`
+2. Issue a `dotnet add package Azure.AI.OpenAI --prerelease`
+3. Issue a `dotnet add package Azure.Core`
 
 #### Updating the processing service
 
-1. In VS Code, open the following file
+1. In VS Code, open the following file and replace with the following code.
     ```
     samples\DragonCopilot\Workflow\SampleExtension.Web\Services\ProcessingService.cs
 
     ```
-1. Navigate to the `ProcessNoteAsync` method.
-1. Remove the contents of the method.
-1. Update the method signature to the following
-	```csharp
-	private static async Task<DspResponse> ProcessNoteAsync(
-        Note note,
-        SessionData sessionData,
-        CancellationToken cancellationToken)
+```C#
 
-	```
-1. Back in your browser, in the Open AI Deployment "Get Started" area, scroll to Section 3 "Run a basic code sample"
-1. Click the "copy" icon in the top right of the box.
-1. Paste the sample into the `ProcessNoteAsync` method.
-1. Move the copied "using" statements to the top of the file.
-1. Back in the browser, in the top of the left section, copy the key.
-1. Paste the key into the variable `apiKey` in the `ProcessNoteAsync` method.
-1. Update the `var response = chatClient.CompleteChat(messages, requestOptions);` as follows
-    ```csharp
-	var response = await chatClient.CompleteChatAsync(messages, requestOptions, cancellationToken).ConfigureAwait(false);
+    // Copyright (c) Microsoft Corporation.
+    // Licensed under the MIT License.
 
-	```
-1. Add the following code to the bottom of the `ProcessNoteAsync` method
-	```csharp
-	// Create adaptive card version
-    var adaptiveCardResponse = new DspResponse
-	{
-        SchemaVersion = "0.1",
-        Document = note.Document,
-    };
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Text;
+    using Microsoft.Extensions.Logging;
+    using Dragon.Copilot.Models;
+    using SampleExtension.Web.Extensions;
+    using Azure;
+    using Azure.AI.OpenAI;
+    using Azure.Identity;
+    using OpenAI.Chat;
 
-    return adaptiveCardResponse;
-	```
-1. Before the `messages` variable is defined, add the following code which concatenates all the note sections to a single variable:
-	```csharp
-    StringBuilder promptBuilder = new StringBuilder();
-    foreach (var section in note.Resources ?? Array.Empty<ClinicalDocumentSection>())
+    using static System.Environment;
+    using System.Text.Json;
+
+    namespace SampleExtension.Web.Services;
+
+    /// <summary>
+    /// Implementation of the processing service for Dragon Standard payloads
+    /// </summary>
+    public class ProcessingService : IProcessingService
     {
-        if (string.IsNullOrWhiteSpace(section.Content))
-            continue;
+        private readonly ILogger<ProcessingService> _logger;
 
-        promptBuilder.AppendLine(section.Context?.Definition);
-        promptBuilder.AppendLine(section.Content);
-        promptBuilder.AppendLine("---");
+        const string endpoint = "https://ignite25aiaiservices-@lab.LabIntance.Id.openai.azure.com/";
+        const string key = "<< ENTER API KEY HERE>>";
+
+        /// <summary>
+        /// Constructor for the processing service
+        /// </summary>
+        /// <param name="logger">The logger</param>
+        public ProcessingService(ILogger<ProcessingService> logger)
+        {
+            _logger = logger;
+        }
+
+        /// <inheritdoc />
+        public async Task<ProcessResponse> ProcessAsync(
+            DragonStandardPayload payload,
+            string? requestId = null,
+            string? correlationId = null,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(payload, nameof(payload));
+
+            try
+            {
+                _logger.LogProcessingStart(requestId, correlationId);
+
+                var processResponse = new ProcessResponse();
+
+                // Process Note if present
+                if (payload.Note != null)
+                {
+                    var noteResponse = await ProcessNoteAsync(payload.Note, payload.SessionData, cancellationToken).ConfigureAwait(false);
+
+                    processResponse.Payload["adaptive-card"] = noteResponse;
+                }
+
+                // TODO: Add processing for other payload types (Transcript, IterativeTranscript, IterativeAudio)
+
+                processResponse.Success = true;
+                processResponse.Message = "Payload processed successfully";
+
+                return processResponse;
+            }
+    #pragma warning disable CA1031
+            catch (Exception ex)
+    #pragma warning restore CA1031
+            {
+                _logger.LogProcessingException(ex, requestId);
+
+                return new ProcessResponse
+                {
+                    Success = false,
+                    Message = "An error occurred while processing the payload",
+                };
+            }
+        }
+
+        private static async Task<DspResponse> ProcessNoteAsync(
+            Note note,
+            SessionData sessionData,
+            CancellationToken cancellationToken)
+        {
+            AzureKeyCredential credential = new AzureKeyCredential(key);
+
+            // Initialize the AzureOpenAIClient
+            var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
+
+            // Initialize the ChatClient with the specified deployment name
+            ChatClient chatClient = azureClient.GetChatClient("gpt-5-mini");
+
+            StringBuilder promptBuilder = new StringBuilder();
+            foreach (var section in note.Resources ?? Array.Empty<ClinicalDocumentSection>())
+            {
+                if (string.IsNullOrWhiteSpace(section.Content))
+                    continue;
+
+                promptBuilder.AppendLine(section.Context?.Definition);
+                promptBuilder.AppendLine(section.Content);
+                promptBuilder.AppendLine("---");
+            }
+            
+            // Create a list of chat messages
+            var messages = new List<ChatMessage>
+            {
+            new SystemChatMessage(@"You are a compassionate healthcare communication specialist. Your role is to translate complex medical notes into clear, patient-friendly explanations that are easy to understand and accurate. This should be in a document format that can be printed and given to the patient when leaving the office.
+            GUIDELINES:
+            1. Use simple, everyday language - avoid medical jargon
+            2. Explain medical terms when you must use them
+            3. Structure information logically (what happened → what it means → what's next)
+            4. Be warm and empathetic in tone
+            5. Focus on what matters most to the patient
+            6. Include reassuring context when appropriate
+            7. Highlight important actions or follow-ups
+            8. Use clear headings to organize information
+
+            FORMAT YOUR RESPONSE WITH:
+            • **What We Found:** Brief summary of key findings
+            • **What This Means:** Explanation in simple terms
+            • **Important Points:** Key things to know or remember
+            • **Next Steps:** Any follow-up actions or appointments
+
+            EXAMPLE STYLE:
+            Instead of: 'Patient presents with acute upper respiratory infection'
+            Say: '**What We Found:** You have a cold or upper respiratory infection - this means the virus has affected your nose, throat, and upper breathing passages.'
+
+            Remember: Patients want to understand their health, feel informed, and know what to expect. Be thorough but not overwhelming."),
+            new UserChatMessage(promptBuilder.ToString())
+            };
+
+            // Create chat completion options
+            var options = new ChatCompletionOptions();
+            
+            try
+            {
+                // Create the chat completion request
+    #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+                ChatCompletion response = await chatClient.CompleteChatAsync(messages, options, cancellationToken);
+    #pragma warning restore CA2007
+
+                // Print the response
+                if (response != null)
+                {
+    #pragma warning disable CA1869 // Cache and reuse JsonSerializerOptions
+                    Console.WriteLine(JsonSerializer.Serialize(response, new JsonSerializerOptions() { WriteIndented = true }));
+    #pragma warning restore CA1869
+                }
+                else
+                {
+    #pragma warning disable CA1303 // Do not pass literals as localized parameters
+                    Console.WriteLine("No response received.");
+    #pragma warning restore CA1303
+                }
+
+                // Create adaptive card version
+                var adaptiveCardResponse = new DspResponse
+                {
+                    SchemaVersion = "0.1",
+                    Document = note.Document,
+                };
+
+                var responseText = response?.Content.FirstOrDefault()?.Text ?? "No response content";
+                adaptiveCardResponse.Resources.Add(CreateAdaptiveCardResource(responseText));
+                return adaptiveCardResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw;
+            }
+        }
+
+    private static VisualizationResource CreateAdaptiveCardResource(string summary)
+    {
+        // Create the body elements list
+        var bodyElements = new List<object>
+        {
+            // Header
+            new
+            {
+                type = "TextBlock",
+                text = "Patient Friendly Summarization - John Doe",
+                weight = "bolder"
+            },
+
+        };
+
+        // No entities found message
+        bodyElements.Add(new
+        {
+            type = "Container",
+            items = new object[]
+            {
+                new
+                {
+                    type = "TextBlock",
+                    text = summary,
+                    wrap = true
+                }
+            }
+        });
+
+        // Add footer
+        bodyElements.Add(new
+        {
+            type = "TextBlock",
+            text = $"Processed at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
+            spacing = "medium"
+        });
+
+        return new VisualizationResource
+        {
+            Id = Guid.NewGuid().ToString(),
+            Type = "AdaptiveCard",
+            Subtype = VisualizationSubtype.Timeline,
+            CardTitle = "Clinical Entities Extracted",
+            PartnerLogo = "https://example.com/assets/sample-extension-logo.png",
+            AdaptiveCardPayload = new AdaptiveCardPayload
+            {
+                Body = bodyElements
+            },
+            Actions = new List<VisualizationAction>
+            {
+                new()
+                {
+                    Title = "Accept Analysis",
+                    Action = VisualizationActionType.Accept,
+                    ActionType = ActionButtonType.Accept,
+                    Code = "Accept"
+                },
+                new()
+                {
+                    Title = "Copy to Note",
+                    Action = VisualizationActionType.Copy,
+                    ActionType = ActionButtonType.Copy,
+                    Code = summary
+                },
+                new()
+                {
+                    Title = "Reject Analysis",
+                    Action = VisualizationActionType.Reject,
+                    ActionType = ActionButtonType.Reject,
+                    Code = "Reject"
+                }
+            },
+            References = new List<VisualizationReference>(),
+            PayloadSources = new List<PayloadSource>
+            {
+                new()
+                {
+                    Identifier = Guid.NewGuid().ToString(),
+                    Description = "Sample Extension Clinical Entity Extractor",
+                    Url = new Uri("https://localhost/api/process")
+                }
+            },
+            DragonCopilotCopyData = "Clinical entities extracted from note content"
+        };
     }
-	```
-1. Add a using statetment at the top of the file for `using System.Text;`
-1. Update the `SystemChatMessage` to the following
-	```csharp
-    new SystemChatMessage(@"You are a compassionate healthcare communication specialist. Your role is to translate complex medical notes into clear, patient-friendly explanations that are easy to understand and accurate. This should be in a document format that can be printed and given to the patient when leaving the office.
+  }
 
-	GUIDELINES:
-    1. Use simple, everyday language - avoid medical jargon
-    2. Explain medical terms when you must use them
-    3. Structure information logically (what happened → what it means → what's next)
-    4. Be warm and empathetic in tone
-    5. Focus on what matters most to the patient
-    6. Include reassuring context when appropriate
-    7. Highlight important actions or follow-ups
-    8. Use clear headings to organize information
+```
 
-	FORMAT YOUR RESPONSE WITH:
-	• **What We Found:** Brief summary of key findings
-	• **What This Means:** Explanation in simple terms
-	• **Important Points:** Key things to know or remember
-	• **Next Steps:** Any follow-up actions or appointments
+2. Copy Key using following steps:
+    1. Open `https://ai.azure.com/?tid=4cfe372a-37a4-44f8-91b2-5faf34253c62`
+    2. Click the AI resource
+    3. Copy API Key
 
-	EXAMPLE STYLE:
-	Instead of: 'Patient presents with acute upper respiratory infection'
-	Say: '**What We Found:** You have a cold or upper respiratory infection - this means the virus has affected your nose, throat, and upper breathing passages.'
-
-	Remember: Patients want to understand their health, feel informed, and know what to expect. Be thorough but not overwhelming."),
-
-	```
-1. Update the `UserChatMessage` to the following
-	```csharp
-    new UserChatMessage(promptBuilder.ToString()),
-
-    ```
-1. Navigate to the `ProcessAsync` method.
-2. Remove the line
-	```csharp
-    processResponse.Payload["sample-entities"] = noteResponse.SampleEntities;
-
-    ```
-3. Update the following line to read:
-	```
-	processResponse.Payload["adaptive-card"] = noteResponse;
-
-    ```
-
-We should now be able to successfully call the OpenAI Resource. In the next section, we will update the output to display an adaptive card
+3. Paste the key into line
+```C#
+const string key = "<< ENTER API KEY HERE>>";
+```
+4. Execute `dotnet run`
+5. Repeat the recording to observe clinical entities extracted by AI in the Dragon Copilot Timeline.
