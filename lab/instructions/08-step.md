@@ -1,8 +1,15 @@
 ## Installing your Extension
 
-1. Go to [Dragon Admin Center](https://admin.healthplatform.microsoft.com)
-2. In the left navigation click "AI apps and agents"
+1. Open the browser and go to `https://admin.healthplatform.microsoft.com/extensions`
+2. Click the dropdown at the top to select the environment on the card you were given.
+
+    ![](media/switch-environment-menu.png)
 3. In the page navigation click "Upload custom"
-4. Select the previously created zip file
+
+    ![](media/dac-upload-custom.png)
+4. Select the previously created zip file in the folder `C:\Users\LabUser\extension-payload`
+
 5. Agree to the terms
+
+    ![](media/dac-upload-custom-details.png)
 6. Click the "Upload custom" button
